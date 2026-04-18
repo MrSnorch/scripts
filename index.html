@@ -1,24 +1,9 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <title>My Scripts</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-
-<h1>📦 Мои скрипты</h1>
-<div id="list">Загрузка...</div>
-
 <script>
 const USERNAME = "MrSnorch";
 const REPO = "scripts";
 
 function parseName(filename) {
-  // убираем .user.js
   let name = filename.replace(".user.js", "");
-
-  // достаём версию
   let versionMatch = name.match(/-(\d+(\.\d+)+)$/);
 
   let version = versionMatch ? versionMatch[1] : null;
@@ -30,13 +15,17 @@ function parseName(filename) {
   return { name, version };
 }
 
+// простая эвристика (не 100%)
+function hasTampermonkeyHint() {
+  return navigator.userAgent.includes("Tampermonkey");
+}
+
 async function loadScripts() {
   const res = await fetch(
     `https://api.github.com/repos/${USERNAME}/${REPO}/contents/files`
   );
 
   const files = await res.json();
-
   const container = document.getElementById("list");
   container.innerHTML = "";
 
@@ -48,10 +37,27 @@ async function loadScripts() {
     const el = document.createElement("div");
     el.className = "card";
 
+    const hasTM = hasTampermonkeyHint();
+
     el.innerHTML = `
       <h2>${parsed.name}</h2>
       ${parsed.version ? `<p>Версия: ${parsed.version}</p>` : ""}
-      <a href="${file.download_url}" download>⬇ Скачать</a>
+
+      <p style="opacity:0.8;font-size:14px;">
+        Для установки нужен Tampermonkey
+      </p>
+
+      <div style="margin-top:10px;">
+        ${
+          hasTM
+          ? `<a href="${file.download_url}" target="_blank">⚡ Установить</a>`
+          : `
+            <a href="https://www.tampermonkey.net/" target="_blank">⬇ Скачать Tampermonkey</a>
+            <br>
+            <a href="${file.download_url}" download>⬇ Скачать скрипт</a>
+          `
+        }
+      </div>
     `;
 
     container.appendChild(el);
@@ -60,6 +66,3 @@ async function loadScripts() {
 
 loadScripts();
 </script>
-
-</body>
-</html>
