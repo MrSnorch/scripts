@@ -1,12 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>My Scripts</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .info {
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 15px;
+      margin: 10px auto;
+      max-width: 600px;
+      border-radius: 12px;
+    }
+
+    .buttons a {
+      display: inline-block;
+      margin: 5px 10px 0 0;
+      color: #38bdf8;
+      text-decoration: none;
+    }
+
+    .buttons a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<h1>📦 Мои скрипты</h1>
+
+<div class="info">
+  <h3>⚙️ Как установить</h3>
+  <p>
+    1. Установи Tampermonkey<br>
+    2. Нажми "Установить"<br>
+    3. Подтверди установку
+  </p>
+</div>
+
+<div id="list">Загрузка...</div>
+
 <script>
 const USERNAME = "MrSnorch";
 const REPO = "scripts";
 
 function parseName(filename) {
   let name = filename.replace(".user.js", "");
-  let versionMatch = name.match(/-(\d+(\.\d+)+)$/);
 
-  let version = versionMatch ? versionMatch[1] : null;
+  let match = name.match(/-(\d+(\.\d+)+)$/);
+  let version = match ? match[1] : null;
 
   if (version) {
     name = name.replace("-" + version, "");
@@ -15,54 +75,64 @@ function parseName(filename) {
   return { name, version };
 }
 
-// простая эвристика (не 100%)
+// эвристика (не 100%)
 function hasTampermonkeyHint() {
   return navigator.userAgent.includes("Tampermonkey");
 }
 
 async function loadScripts() {
-  const res = await fetch(
-    `https://api.github.com/repos/${USERNAME}/${REPO}/contents/files`
-  );
-
-  const files = await res.json();
   const container = document.getElementById("list");
-  container.innerHTML = "";
 
-  files.reverse().forEach(file => {
-    if (file.type !== "file") return;
+  if (!container) {
+    console.error("❌ #list не найден");
+    return;
+  }
 
-    const parsed = parseName(file.name);
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${USERNAME}/${REPO}/contents/files`
+    );
 
-    const el = document.createElement("div");
-    el.className = "card";
+    const files = await res.json();
 
-    const hasTM = hasTampermonkeyHint();
+    container.innerHTML = "";
 
-    el.innerHTML = `
-      <h2>${parsed.name}</h2>
-      ${parsed.version ? `<p>Версия: ${parsed.version}</p>` : ""}
+    files.reverse().forEach(file => {
+      if (file.type !== "file") return;
 
-      <p style="opacity:0.8;font-size:14px;">
-        Для установки нужен Tampermonkey
-      </p>
+      const parsed = parseName(file.name);
+      const hasTM = hasTampermonkeyHint();
 
-      <div style="margin-top:10px;">
-        ${
-          hasTM
-          ? `<a href="${file.download_url}" target="_blank">⚡ Установить</a>`
-          : `
-            <a href="https://www.tampermonkey.net/" target="_blank">⬇ Скачать Tampermonkey</a>
-            <br>
-            <a href="${file.download_url}" download>⬇ Скачать скрипт</a>
-          `
-        }
-      </div>
-    `;
+      const el = document.createElement("div");
+      el.className = "card";
 
-    container.appendChild(el);
-  });
+      el.innerHTML = `
+        <h2>${parsed.name}</h2>
+        ${parsed.version ? `<p>Версия: ${parsed.version}</p>` : ""}
+
+        <div class="buttons">
+          ${
+            hasTM
+            ? `<a href="${file.download_url}" target="_blank">⚡ Установить</a>`
+            : `
+              <a href="https://www.tampermonkey.net/" target="_blank">🔧 Скачать Tampermonkey</a>
+              <a href="${file.download_url}" download>⬇ Скачать скрипт</a>
+            `
+          }
+        </div>
+      `;
+
+      container.appendChild(el);
+    });
+
+  } catch (e) {
+    console.error(e);
+    container.innerHTML = "❌ Ошибка загрузки";
+  }
 }
 
-loadScripts();
+document.addEventListener("DOMContentLoaded", loadScripts);
 </script>
+
+</body>
+</html>
