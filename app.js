@@ -10,10 +10,15 @@ const pageConfig = (() => {
 
 const state = {
   records: [],
+  query: "",
 };
 
 const elements = {
   repoLink: document.getElementById("repoLink"),
+  scriptCount: document.getElementById("scriptCount"),
+  resultSummary: document.getElementById("resultSummary"),
+  search: document.getElementById("scriptSearch"),
+  reloadButton: document.getElementById("reloadButton"),
   list: document.getElementById("list"),
   toast: document.getElementById("toast"),
 };
@@ -26,6 +31,15 @@ init();
 function init() {
   const repoUrl = `https://github.com/${pageConfig.user}/${pageConfig.repo}`;
   elements.repoLink.href = repoUrl;
+
+  elements.search.addEventListener("input", (event) => {
+    state.query = event.target.value.trim().toLowerCase();
+    renderList();
+  });
+
+  elements.reloadButton.addEventListener("click", () => {
+    loadScripts({ forceReload: true });
+  });
 
   elements.list.addEventListener("click", async (event) => {
     const copyButton = event.target.closest("[data-copy-url]");
@@ -47,6 +61,8 @@ function init() {
 }
 
 async function loadScripts({ forceReload = false } = {}) {
+  elements.reloadButton.disabled = true;
+  elements.resultSummary.textContent = "Loading...";
   renderLoadingState();
 
   try {
@@ -67,10 +83,14 @@ async function loadScripts({ forceReload = false } = {}) {
 
     const records = await Promise.all(files.map(loadScriptRecord));
     state.records = records.sort((left, right) => collator.compare(left.name, right.name));
+    updateSummary();
     renderList();
   } catch (error) {
     state.records = [];
+    updateSummary();
     renderError(error instanceof Error ? error.message : "Could not load scripts.");
+  } finally {
+    elements.reloadButton.disabled = false;
   }
 }
 
@@ -118,6 +138,7 @@ async function loadScriptRecord(file) {
 
 function renderList() {
   if (!state.records.length) {
+    elements.resultSummary.textContent = "No scripts found.";
     renderEmpty(
       "No scripts yet",
       `Add .user.js files to /${pageConfig.scriptsPath} and refresh the page.`
@@ -125,12 +146,21 @@ function renderList() {
     return;
   }
 
+  const visible = state.records.filter((record) => matchesQuery(record, state.query));
+
+  if (!visible.length) {
+    elements.resultSummary.textContent = `0 results out of ${state.records.length}.`;
+    renderEmpty("No matching scripts", "Try a different search term.");
+    return;
+  }
+
   const fragment = document.createDocumentFragment();
-  state.records.forEach((record) => {
+  visible.forEach((record) => {
     fragment.appendChild(buildCard(record));
   });
 
   elements.list.replaceChildren(fragment);
+  elements.resultSummary.textContent = `Showing ${visible.length} of ${state.records.length}.`;
 }
 
 function buildCard(record) {
@@ -207,6 +237,12 @@ function renderError(message) {
     <p>${escapeHtml(message)}</p>
   `;
   elements.list.replaceChildren(box);
+  elements.resultSummary.textContent = "Could not load scripts.";
+}
+
+function updateSummary() {
+  const count = state.records.length;
+  elements.scriptCount.textContent = `${formatNumber(count)} ${count === 1 ? "script" : "scripts"}`;
 }
 
 function parseUserscriptMetadata(source) {
@@ -275,6 +311,23 @@ function shortenTargets(targets) {
   return extra > 0 ? `${visible.join(", ")} +${extra} more` : visible.join(", ");
 }
 
+function matchesQuery(record, query) {
+  if (!query) return true;
+
+  const haystack = [
+    record.name,
+    record.description,
+    record.version,
+    record.fileName,
+    ...record.targets,
+    ...record.grants,
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return haystack.includes(query);
+}
+
 function showToast(message) {
   elements.toast.textContent = message;
   elements.toast.classList.add("is-visible");
@@ -286,6 +339,10 @@ function showToast(message) {
 
 function unique(items) {
   return Array.from(new Set(items.filter(Boolean)));
+}
+
+function formatNumber(value) {
+  return new Intl.NumberFormat("en-US").format(value);
 }
 
 function getGitHubErrorMessage(status) {
