@@ -12,7 +12,23 @@
 
 <script>
 const USERNAME = "MrSnorch";
-const REPO = "scripts-site";
+const REPO = "scripts";
+
+function parseName(filename) {
+  // убираем .user.js
+  let name = filename.replace(".user.js", "");
+
+  // достаём версию
+  let versionMatch = name.match(/-(\d+(\.\d+)+)$/);
+
+  let version = versionMatch ? versionMatch[1] : null;
+
+  if (version) {
+    name = name.replace("-" + version, "");
+  }
+
+  return { name, version };
+}
 
 async function loadScripts() {
   const res = await fetch(
@@ -24,14 +40,17 @@ async function loadScripts() {
   const container = document.getElementById("list");
   container.innerHTML = "";
 
-  files.forEach(file => {
+  files.reverse().forEach(file => {
     if (file.type !== "file") return;
+
+    const parsed = parseName(file.name);
 
     const el = document.createElement("div");
     el.className = "card";
 
     el.innerHTML = `
-      <h2>${file.name}</h2>
+      <h2>${parsed.name}</h2>
+      ${parsed.version ? `<p>Версия: ${parsed.version}</p>` : ""}
       <a href="${file.download_url}" download>⬇ Скачать</a>
     `;
 
