@@ -1,7 +1,12 @@
 [
   {
     "name": "Example Script",
-    "description": "Пример скрипта",
+    "description": "ÐÑÐ¸Ð¼ÐµÑ ÑÐºÑÐ¸Ð¿ÑÐ°",
     "file": "files/example.js"
+  },
+  {
+    "name": "ROE Spawn Tracker",
+    "description": "ROE Spawn Tracker",
+    "file": "files/ROE Spawn Tracker-2.5.user.js"
   }
 ]
