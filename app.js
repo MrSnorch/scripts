@@ -177,6 +177,8 @@ function buildCard(record) {
   if (!record.hasMetadata) metaParts.push("Fallback data");
 
   card.innerHTML = `
+    <div class="card-top-bar"></div>
+    <div class="card-inner">
     <div class="card-head">
       <div>
         <h2>${escapeHtml(record.name)}</h2>
@@ -195,6 +197,7 @@ function buildCard(record) {
       <a class="link-button link-button--primary" href="${escapeAttribute(record.installUrl)}" target="_blank" rel="noreferrer">Install</a>
       <a class="link-button" href="${escapeAttribute(record.sourceUrl)}" target="_blank" rel="noreferrer">Source</a>
       <button class="action-button" type="button" data-copy-url="${escapeAttribute(record.rawUrl)}">Copy raw URL</button>
+    </div>
     </div>
   `;
 

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Simple GitHub page for installing my userscripts.">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#07090d">
   <title>Snorch Scripts</title>
   <link rel="stylesheet" href="styles.css">
   <script defer src="app.js"></script>
@@ -22,19 +22,21 @@
     </header>
 
     <section class="info">
-      <h2>How to install</h2>
-      <ol>
-        <li>Install Tampermonkey or another userscript manager.</li>
-        <li>Click the install button on the script you want.</li>
-        <li>Confirm the installation in your browser extension.</li>
-      </ol>
-      <div class="info-links">
-        <a class="link-button" href="https://github.com/MrSnorch/scripts" id="repoLink" target="_blank" rel="noreferrer">Open GitHub</a>
-        <a class="link-button" href="https://www.tampermonkey.net/" target="_blank" rel="noreferrer">Get Tampermonkey</a>
+      <div class="info-body">
+        <h2>How to install</h2>
+        <ol>
+          <li>Install Tampermonkey or another userscript manager.</li>
+          <li>Click the install button on the script you want.</li>
+          <li>Confirm the installation in your browser extension.</li>
+        </ol>
+        <div class="info-links">
+          <a class="link-button" href="https://github.com/MrSnorch/scripts" id="repoLink" target="_blank" rel="noreferrer">Open GitHub</a>
+          <a class="link-button" href="https://www.tampermonkey.net/" target="_blank" rel="noreferrer">Get Tampermonkey</a>
+        </div>
+        <p class="info-note">
+          Install links use the raw GitHub file. If the script opens as text, install a userscript manager first.
+        </p>
       </div>
-      <p class="info-note">
-        Install links use the raw GitHub file. If the script opens as text, install a userscript manager first.
-      </p>
     </section>
 
     <section class="list-toolbar">
@@ -44,7 +46,7 @@
       </div>
 
       <div class="list-toolbar__actions">
-        <input id="scriptSearch" type="search" placeholder="Search scripts">
+        <input id="scriptSearch" type="search" placeholder="Search scripts…">
         <button id="reloadButton" class="action-button" type="button">Reload</button>
       </div>
     </section>
