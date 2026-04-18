@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
   <h1>📦 Мои скрипты</h1>
   <div id="list"></div>
 
@@ -15,7 +16,7 @@
       .then(data => {
         const container = document.getElementById('list');
 
-        data.forEach(script => {
+        data.reverse().forEach(script => {
           const el = document.createElement('div');
           el.className = 'card';
 
@@ -29,5 +30,6 @@
         });
       });
   </script>
+
 </body>
 </html>
