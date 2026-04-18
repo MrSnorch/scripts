@@ -1,12 +1,7 @@
 [
   {
-    "name": "Spawn Tracker",
-    "description": "Отслеживает респавн мобов",
-    "file": "files/spawn-tracker.js"
-  },
-  {
-    "name": "Auto Farm",
-    "description": "Автоматический фарм ресурсов",
-    "file": "files/auto-farm.js"
+    "name": "Example Script",
+    "description": "Пример скрипта",
+    "file": "files/example.js"
   }
 ]
