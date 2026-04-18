@@ -3,12 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Simple GitHub catalog for userscripts.">
-  <meta name="theme-color" content="#f6f7fb">
-  <title>MrSnorch Scripts</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <meta name="description" content="Simple GitHub page for installing my userscripts.">
+  <meta name="theme-color" content="#0f172a">
+  <title>My Scripts</title>
   <link rel="stylesheet" href="styles.css">
   <script defer src="app.js"></script>
 </head>
@@ -18,63 +15,31 @@
   data-scripts-path="files"
   data-owner-name="MrSnorch"
 >
-  <div class="page">
-    <header class="hero">
-      <div class="hero__content">
-        <p class="hero__eyebrow">GitHub userscript catalog</p>
-        <h1 id="repoBrand">MrSnorch Scripts</h1>
-        <p class="hero__lead">
-          A simple page for publishing, browsing, and installing your scripts directly from GitHub.
-        </p>
-      </div>
-
-      <div class="hero__actions">
-        <a class="button button--primary" id="repoLink" href="https://github.com/MrSnorch/scripts" target="_blank" rel="noreferrer">Open GitHub</a>
-        <a class="button button--secondary" href="https://www.tampermonkey.net/" target="_blank" rel="noreferrer">Get Tampermonkey</a>
-      </div>
+  <main class="container">
+    <header class="page-header">
+      <h1>My Scripts</h1>
+      <p class="subtitle">A simple page where I publish my userscripts from GitHub.</p>
     </header>
 
-    <section class="panel toolbar">
-      <div class="toolbar__top">
-        <div class="toolbar__meta">
-          <span id="scriptCount" class="toolbar__count">0 scripts</span>
-          <span class="toolbar__sep">/</span>
-          <span id="publishPath">/files</span>
-        </div>
-
-        <button class="button button--secondary" id="reloadButton" type="button">Reload</button>
+    <section class="info">
+      <h2>How to install</h2>
+      <ol>
+        <li>Install Tampermonkey or another userscript manager.</li>
+        <li>Click the install button on the script you want.</li>
+        <li>Confirm the installation in your browser extension.</li>
+      </ol>
+      <div class="info-links">
+        <a class="link-button" href="https://github.com/MrSnorch/scripts" id="repoLink" target="_blank" rel="noreferrer">Open GitHub</a>
+        <a class="link-button" href="https://www.tampermonkey.net/" target="_blank" rel="noreferrer">Get Tampermonkey</a>
       </div>
-
-      <label class="search-field" for="scriptSearch">
-        <span>Search scripts</span>
-        <input id="scriptSearch" type="search" placeholder="Name, description, target, version">
-      </label>
-
-      <div class="toolbar__bottom">
-        <span id="resultSummary">Loading scripts...</span>
-        <span id="statusNote">Install links open the raw GitHub file. Source links open the repository page.</span>
-      </div>
-
-      <p class="toolbar__note">
-        If a script opens as plain text, install a userscript manager first and try again.
+      <p class="info-note">
+        Install links use the raw GitHub file. If the script opens as text, install a userscript manager first.
       </p>
     </section>
 
-    <main>
-      <div id="scriptGrid" class="script-grid" aria-live="polite"></div>
-    </main>
-
-    <footer class="footer">
-      <p>Drop <code>.user.js</code> files into <code>/files</code>, push to GitHub, and this page will pick them up automatically.</p>
-    </footer>
-  </div>
+    <div id="list" class="list" aria-live="polite">Loading...</div>
+  </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-  <noscript>
-    <div class="noscript">
-      <p>This page needs JavaScript to load scripts from GitHub.</p>
-    </div>
-  </noscript>
 </body>
 </html>

@@ -10,19 +10,11 @@ const pageConfig = (() => {
 
 const state = {
   records: [],
-  query: "",
 };
 
 const elements = {
-  repoBrand: document.getElementById("repoBrand"),
   repoLink: document.getElementById("repoLink"),
-  publishPath: document.getElementById("publishPath"),
-  search: document.getElementById("scriptSearch"),
-  reloadButton: document.getElementById("reloadButton"),
-  grid: document.getElementById("scriptGrid"),
-  resultSummary: document.getElementById("resultSummary"),
-  statusNote: document.getElementById("statusNote"),
-  scriptCount: document.getElementById("scriptCount"),
+  list: document.getElementById("list"),
   toast: document.getElementById("toast"),
 };
 
@@ -33,29 +25,17 @@ init();
 
 function init() {
   const repoUrl = `https://github.com/${pageConfig.user}/${pageConfig.repo}`;
-  document.title = `${pageConfig.ownerName} Scripts`;
-  elements.repoBrand.textContent = `${pageConfig.ownerName} Scripts`;
   elements.repoLink.href = repoUrl;
-  elements.publishPath.textContent = `/${pageConfig.scriptsPath}`;
 
-  elements.search.addEventListener("input", (event) => {
-    state.query = event.target.value.trim().toLowerCase();
-    renderCatalog();
-  });
+  elements.list.addEventListener("click", async (event) => {
+    const copyButton = event.target.closest("[data-copy-url]");
+    if (!copyButton) return;
 
-  elements.reloadButton.addEventListener("click", () => {
-    loadCatalog({ forceReload: true });
-  });
-
-  elements.grid.addEventListener("click", async (event) => {
-    const button = event.target.closest("[data-copy-url]");
-    if (!button) return;
-
-    const url = button.getAttribute("data-copy-url");
-    if (!url) return;
+    const rawUrl = copyButton.getAttribute("data-copy-url");
+    if (!rawUrl) return;
 
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(rawUrl);
       showToast("Raw URL copied.");
     } catch (error) {
       showToast("Could not copy the raw URL.");
@@ -63,18 +43,15 @@ function init() {
   });
 
   renderLoadingState();
-  loadCatalog();
+  loadScripts();
 }
 
-async function loadCatalog({ forceReload = false } = {}) {
-  elements.reloadButton.disabled = true;
-  elements.resultSummary.textContent = "Loading scripts from GitHub...";
-  elements.statusNote.textContent = "Reading repository contents and userscript metadata.";
+async function loadScripts({ forceReload = false } = {}) {
   renderLoadingState();
 
   try {
-    const contentsUrl = `https://api.github.com/repos/${pageConfig.user}/${pageConfig.repo}/contents/${pageConfig.scriptsPath}`;
-    const response = await fetch(contentsUrl, {
+    const url = `https://api.github.com/repos/${pageConfig.user}/${pageConfig.repo}/contents/${pageConfig.scriptsPath}`;
+    const response = await fetch(url, {
       cache: forceReload ? "reload" : "default",
       headers: { Accept: "application/vnd.github+json" },
     });
@@ -90,14 +67,10 @@ async function loadCatalog({ forceReload = false } = {}) {
 
     const records = await Promise.all(files.map(loadScriptRecord));
     state.records = records.sort((left, right) => collator.compare(left.name, right.name));
-    updateHeaderStats();
-    renderCatalog();
+    renderList();
   } catch (error) {
     state.records = [];
-    updateHeaderStats();
-    renderErrorState(error instanceof Error ? error.message : "Catalog could not be loaded.");
-  } finally {
-    elements.reloadButton.disabled = false;
+    renderError(error instanceof Error ? error.message : "Could not load scripts.");
   }
 }
 
@@ -118,10 +91,10 @@ async function loadScriptRecord(file) {
       description: meta.description || "No description provided.",
       targets: getTargets(meta.match, meta.include),
       grants: unique(meta.grant),
-      installUrl: meta.downloadURL || file.download_url,
-      rawUrl: file.download_url,
-      sourceUrl: file.html_url,
       fileName: file.name,
+      installUrl: meta.downloadURL || file.download_url,
+      sourceUrl: file.html_url,
+      rawUrl: file.download_url,
       lines: source.split(/\r?\n/).length,
       hasMetadata: true,
     };
@@ -133,126 +106,107 @@ async function loadScriptRecord(file) {
       description: "Metadata could not be read from this file.",
       targets: [],
       grants: [],
-      installUrl: file.download_url,
-      rawUrl: file.download_url,
-      sourceUrl: file.html_url,
       fileName: file.name,
+      installUrl: file.download_url,
+      sourceUrl: file.html_url,
+      rawUrl: file.download_url,
       lines: null,
       hasMetadata: false,
     };
   }
 }
 
-function renderCatalog() {
+function renderList() {
   if (!state.records.length) {
-    elements.resultSummary.textContent = "No scripts found.";
-    elements.statusNote.textContent = `Add .user.js files to /${pageConfig.scriptsPath} and reload the page.`;
-    renderEmptyState("No scripts published yet", `Nothing was found in /${pageConfig.scriptsPath}.`);
-    return;
-  }
-
-  const visible = state.records.filter((record) => matchesQuery(record, state.query));
-  elements.grid.innerHTML = "";
-
-  if (!visible.length) {
-    elements.resultSummary.textContent = `0 results out of ${state.records.length}.`;
-    elements.statusNote.textContent = "Search checks the script name, description, target, version, and file name.";
-    renderEmptyState("No matching scripts", "Try a different search term.");
+    renderEmpty(
+      "No scripts yet",
+      `Add .user.js files to /${pageConfig.scriptsPath} and refresh the page.`
+    );
     return;
   }
 
   const fragment = document.createDocumentFragment();
-  visible.forEach((record) => {
-    fragment.appendChild(buildScriptCard(record));
+  state.records.forEach((record) => {
+    fragment.appendChild(buildCard(record));
   });
 
-  elements.grid.appendChild(fragment);
-  elements.resultSummary.textContent = `Showing ${visible.length} of ${state.records.length} scripts.`;
-  elements.statusNote.textContent = "Install links open the raw GitHub file. Source links open the repository page.";
+  elements.list.replaceChildren(fragment);
 }
 
-function buildScriptCard(record) {
-  const article = document.createElement("article");
-  article.className = "script-card";
+function buildCard(record) {
+  const card = document.createElement("article");
+  card.className = "card";
 
-  const targetText = record.targets.length
-    ? shortenTargets(record.targets)
-    : "Target metadata missing";
+  const targetsText = record.targets.length
+    ? `Targets: ${shortenTargets(record.targets)}`
+    : "Targets: not specified";
 
-  const metaParts = [
-    record.lines ? `${formatNumber(record.lines)} lines` : "Lines unavailable",
-    `Grant: ${record.grants[0] || "none"}`,
-  ];
+  const metaParts = [];
+  if (record.lines) metaParts.push(`${formatNumber(record.lines)} lines`);
+  if (record.grants[0]) metaParts.push(`Grant: ${record.grants[0]}`);
+  if (!record.hasMetadata) metaParts.push("Fallback data");
 
-  article.innerHTML = `
-    <div class="script-card__head">
+  card.innerHTML = `
+    <div class="card-head">
       <div>
         <h2>${escapeHtml(record.name)}</h2>
-        <p class="script-card__file">${escapeHtml(record.fileName)}</p>
       </div>
-      <span class="script-card__version">v${escapeHtml(record.version)}</span>
+      <span class="version">v${escapeHtml(record.version)}</span>
     </div>
 
-    <p class="script-card__description">${escapeHtml(record.description)}</p>
-    <p class="script-card__targets">${escapeHtml(targetText)}</p>
-
-    <div class="script-card__meta">
-      ${metaParts.map((item) => `<span class="badge">${escapeHtml(item)}</span>`).join("")}
-      ${record.hasMetadata ? "" : '<span class="badge badge--warning">Fallback</span>'}
+    <p class="description">${escapeHtml(record.description)}</p>
+    <div class="meta">
+      <span>${escapeHtml(record.fileName)}</span>
+      ${metaParts.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}
     </div>
+    <p class="targets">${escapeHtml(targetsText)}</p>
 
-    <div class="script-card__actions">
-      <a class="button button--primary" href="${escapeAttribute(record.installUrl)}" target="_blank" rel="noreferrer">Install</a>
-      <a class="button button--secondary" href="${escapeAttribute(record.sourceUrl)}" target="_blank" rel="noreferrer">Source</a>
-      <button class="button button--ghost" type="button" data-copy-url="${escapeAttribute(record.rawUrl)}">Copy raw URL</button>
+    <div class="buttons">
+      <a class="link-button link-button--primary" href="${escapeAttribute(record.installUrl)}" target="_blank" rel="noreferrer">Install</a>
+      <a class="link-button" href="${escapeAttribute(record.sourceUrl)}" target="_blank" rel="noreferrer">Source</a>
+      <button class="action-button" type="button" data-copy-url="${escapeAttribute(record.rawUrl)}">Copy raw URL</button>
     </div>
   `;
 
-  return article;
+  return card;
 }
 
 function renderLoadingState() {
-  elements.grid.innerHTML = "";
+  const fragment = document.createDocumentFragment();
 
   for (let index = 0; index < 3; index += 1) {
-    const card = document.createElement("article");
-    card.className = "script-card skeleton";
+    const card = document.createElement("div");
+    card.className = "card skeleton";
     card.innerHTML = `
-      <div class="skeleton__line skeleton__line--title"></div>
-      <div class="skeleton__line"></div>
-      <div class="skeleton__line skeleton__line--short"></div>
-      <div class="skeleton__line"></div>
+      <div class="skeleton-line skeleton-line--title"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line skeleton-line--short"></div>
+      <div class="skeleton-line"></div>
     `;
-    elements.grid.appendChild(card);
+    fragment.appendChild(card);
   }
+
+  elements.list.replaceChildren(fragment);
 }
 
-function renderEmptyState(title, text) {
+function renderEmpty(title, text) {
   const box = document.createElement("div");
-  box.className = "empty-state";
+  box.className = "empty";
   box.innerHTML = `
     <h3>${escapeHtml(title)}</h3>
     <p>${escapeHtml(text)}</p>
   `;
-  elements.grid.replaceChildren(box);
+  elements.list.replaceChildren(box);
 }
 
-function renderErrorState(message) {
+function renderError(message) {
   const box = document.createElement("div");
-  box.className = "error-state";
+  box.className = "error";
   box.innerHTML = `
-    <h3>Catalog unavailable</h3>
+    <h3>Loading error</h3>
     <p>${escapeHtml(message)}</p>
   `;
-
-  elements.grid.replaceChildren(box);
-  elements.resultSummary.textContent = "Could not load the catalog.";
-  elements.statusNote.textContent = "Check the repository name, folder path, or GitHub API limits.";
-}
-
-function updateHeaderStats() {
-  const count = state.records.length;
-  elements.scriptCount.textContent = `${formatNumber(count)} ${count === 1 ? "script" : "scripts"}`;
+  elements.list.replaceChildren(box);
 }
 
 function parseUserscriptMetadata(source) {
@@ -321,23 +275,6 @@ function shortenTargets(targets) {
   return extra > 0 ? `${visible.join(", ")} +${extra} more` : visible.join(", ");
 }
 
-function matchesQuery(record, query) {
-  if (!query) return true;
-
-  const haystack = [
-    record.name,
-    record.description,
-    record.version,
-    record.fileName,
-    ...record.targets,
-    ...record.grants,
-  ]
-    .join(" ")
-    .toLowerCase();
-
-  return haystack.includes(query);
-}
-
 function showToast(message) {
   elements.toast.textContent = message;
   elements.toast.classList.add("is-visible");
@@ -351,13 +288,9 @@ function unique(items) {
   return Array.from(new Set(items.filter(Boolean)));
 }
 
-function formatNumber(value) {
-  return new Intl.NumberFormat("en-US").format(value);
-}
-
 function getGitHubErrorMessage(status) {
   if (status === 403) return "GitHub API rate limit reached. Try again later.";
-  if (status === 404) return "Repository or publish folder was not found.";
+  if (status === 404) return "Repository or files folder was not found.";
   return `GitHub returned status ${status}.`;
 }
 
