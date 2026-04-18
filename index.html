@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>My Scripts</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>📦 Мои скрипты</h1>
+  <div id="list"></div>
+
+  <script>
+    fetch('scripts.json')
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('list');
+
+        data.forEach(script => {
+          const el = document.createElement('div');
+          el.className = 'card';
+
+          el.innerHTML = `
+            <h2>${script.name}</h2>
+            <p>${script.description}</p>
+            <a href="${script.file}" download>⬇ Скачать</a>
+          `;
+
+          container.appendChild(el);
+        });
+      });
+  </script>
+</body>
+</html>
