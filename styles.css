@@ -1,5 +1,5 @@
 body {
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background: #0f172a;
   color: #e2e8f0;
   padding: 20px;
@@ -13,8 +13,9 @@ h1 {
   background: #1e293b;
   padding: 15px;
   margin: 10px auto;
-  max-width: 500px;
-  border-radius: 10px;
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
 a {
@@ -22,4 +23,8 @@ a {
   margin-top: 10px;
   color: #38bdf8;
   text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
