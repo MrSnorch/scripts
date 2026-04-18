@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Install-ready catalog for GitHub-hosted userscripts.">
-  <meta name="theme-color" content="#f1ede3">
+  <meta name="description" content="Simple GitHub catalog for userscripts.">
+  <meta name="theme-color" content="#f6f7fb">
   <title>MrSnorch Scripts</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,133 +18,54 @@
   data-scripts-path="files"
   data-owner-name="MrSnorch"
 >
-  <div class="page-shell">
-    <header class="hero panel">
-      <div class="hero__top">
-        <a class="brand" id="repoBrand" href="https://github.com/MrSnorch/scripts" target="_blank" rel="noreferrer">
-          <span class="brand__mark">MS</span>
-          <span class="brand__text">
-            <strong>MrSnorch Scripts</strong>
-            <span>GitHub-powered userscript catalog</span>
-          </span>
-        </a>
-
-        <div class="hero__actions">
-          <a class="button button--ghost" id="repoLink" href="https://github.com/MrSnorch/scripts" target="_blank" rel="noreferrer">Open GitHub</a>
-          <a class="button button--ghost" href="https://www.tampermonkey.net/" target="_blank" rel="noreferrer">Get Tampermonkey</a>
-        </div>
+  <div class="page">
+    <header class="hero">
+      <div class="hero__content">
+        <p class="hero__eyebrow">GitHub userscript catalog</p>
+        <h1 id="repoBrand">MrSnorch Scripts</h1>
+        <p class="hero__lead">
+          A simple page for publishing, browsing, and installing your scripts directly from GitHub.
+        </p>
       </div>
 
-      <div class="hero__content">
-        <div class="hero__copy">
-          <p class="eyebrow">Userscripts / English UI / Auto-generated from GitHub</p>
-          <h1>Install-ready pages for every script you publish.</h1>
-          <p class="hero__description">
-            This page scans your GitHub repository, reads the metadata from each <code>.user.js</code> file,
-            and turns it into a clean catalog with install links, source links, supported targets, and search.
-          </p>
-
-          <div class="hero__pills">
-            <span class="pill">Live GitHub source</span>
-            <span class="pill">Metadata-aware cards</span>
-            <span class="pill">Made for GitHub Pages</span>
-          </div>
-        </div>
-
-        <div class="hero__stats">
-          <article class="stat-card">
-            <span class="stat-card__value" id="scriptCount">0</span>
-            <span class="stat-card__label">Scripts discovered</span>
-          </article>
-          <article class="stat-card">
-            <span class="stat-card__value" id="targetCount">0</span>
-            <span class="stat-card__label">Unique targets</span>
-          </article>
-          <article class="stat-card">
-            <span class="stat-card__value stat-card__value--path" id="publishPath">/files</span>
-            <span class="stat-card__label">Publish folder</span>
-          </article>
-        </div>
+      <div class="hero__actions">
+        <a class="button button--primary" id="repoLink" href="https://github.com/MrSnorch/scripts" target="_blank" rel="noreferrer">Open GitHub</a>
+        <a class="button button--secondary" href="https://www.tampermonkey.net/" target="_blank" rel="noreferrer">Get Tampermonkey</a>
       </div>
     </header>
 
-    <main class="layout">
-      <section class="panel guide">
-        <div class="section-head">
-          <div>
-            <p class="section-head__eyebrow">How it works</p>
-            <h2>Simple publishing flow</h2>
-          </div>
-          <p class="section-head__text">Push a new userscript to GitHub and this page will surface it automatically.</p>
-        </div>
-
-        <div class="guide__grid">
-          <article class="guide-card">
-            <span class="guide-card__step">01</span>
-            <h3>Drop scripts into your repo</h3>
-            <p>Place each <code>.user.js</code> file inside <code>/files</code> so the catalog can discover it.</p>
-          </article>
-
-          <article class="guide-card">
-            <span class="guide-card__step">02</span>
-            <h3>Keep the metadata header clean</h3>
-            <p>Use <code>@name</code>, <code>@version</code>, <code>@description</code>, and <code>@match</code> so each card looks complete.</p>
-          </article>
-
-          <article class="guide-card">
-            <span class="guide-card__step">03</span>
-            <h3>Install from the raw file</h3>
-            <p>Visitors can install the script directly, inspect the source on GitHub, or copy the raw URL.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="panel toolbar">
-        <div class="toolbar__row">
-          <label class="search-field" for="scriptSearch">
-            <span>Find a script</span>
-            <input id="scriptSearch" type="search" placeholder="Search by name, description, target, or version">
-          </label>
-
-          <button class="button button--secondary" id="reloadButton" type="button">Reload catalog</button>
-        </div>
-
+    <section class="panel toolbar">
+      <div class="toolbar__top">
         <div class="toolbar__meta">
-          <span id="resultSummary">Loading scripts...</span>
-          <span id="statusNote">Powered by GitHub repository contents and userscript metadata.</span>
-        </div>
-      </section>
-
-      <section class="scripts-section">
-        <div class="section-head">
-          <div>
-            <p class="section-head__eyebrow">Library</p>
-            <h2>Available scripts</h2>
-          </div>
-          <p class="section-head__text">Each card is generated from the live files in your repository.</p>
+          <span id="scriptCount" class="toolbar__count">0 scripts</span>
+          <span class="toolbar__sep">/</span>
+          <span id="publishPath">/files</span>
         </div>
 
-        <div id="scriptGrid" class="script-grid" aria-live="polite"></div>
-      </section>
+        <button class="button button--secondary" id="reloadButton" type="button">Reload</button>
+      </div>
 
-      <section class="panel note-panel">
-        <div class="section-head">
-          <div>
-            <p class="section-head__eyebrow">Install note</p>
-            <h2>If a script opens as plain text</h2>
-          </div>
-          <p class="section-head__text">That usually means the browser does not have a userscript manager yet.</p>
-        </div>
+      <label class="search-field" for="scriptSearch">
+        <span>Search scripts</span>
+        <input id="scriptSearch" type="search" placeholder="Name, description, target, version">
+      </label>
 
-        <div class="note-panel__content">
-          <p>Install <a href="https://www.tampermonkey.net/" target="_blank" rel="noreferrer">Tampermonkey</a> or <a href="https://violentmonkey.github.io/" target="_blank" rel="noreferrer">Violentmonkey</a>, then open the install link again.</p>
-          <p class="note-panel__subtle">The page always keeps the raw GitHub file and source page one click away.</p>
-        </div>
-      </section>
+      <div class="toolbar__bottom">
+        <span id="resultSummary">Loading scripts...</span>
+        <span id="statusNote">Install links open the raw GitHub file. Source links open the repository page.</span>
+      </div>
+
+      <p class="toolbar__note">
+        If a script opens as plain text, install a userscript manager first and try again.
+      </p>
+    </section>
+
+    <main>
+      <div id="scriptGrid" class="script-grid" aria-live="polite"></div>
     </main>
 
     <footer class="footer">
-      <p>Built for GitHub-hosted scripts. Add new files to <code>/files</code>, push to GitHub, and the catalog updates on the next page load.</p>
+      <p>Drop <code>.user.js</code> files into <code>/files</code>, push to GitHub, and this page will pick them up automatically.</p>
     </footer>
   </div>
 
@@ -152,7 +73,7 @@
 
   <noscript>
     <div class="noscript">
-      <p>This catalog needs JavaScript to load your GitHub scripts and build the install cards.</p>
+      <p>This page needs JavaScript to load scripts from GitHub.</p>
     </div>
   </noscript>
 </body>
