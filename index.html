@@ -7,29 +7,40 @@
 </head>
 <body>
 
-  <h1>📦 Мои скрипты</h1>
-  <div id="list"></div>
+<h1>📦 Мои скрипты</h1>
+<div id="list">Загрузка...</div>
 
-  <script>
-    fetch('scripts.json')
-      .then(res => res.json())
-      .then(data => {
-        const container = document.getElementById('list');
+<script>
+const USERNAME = "MrSnorch";
+const REPO = "scripts-site";
 
-        data.reverse().forEach(script => {
-          const el = document.createElement('div');
-          el.className = 'card';
+async function loadScripts() {
+  const res = await fetch(
+    `https://api.github.com/repos/${USERNAME}/${REPO}/contents/files`
+  );
 
-          el.innerHTML = `
-            <h2>${script.name}</h2>
-            <p>${script.description}</p>
-            <a href="${script.file}" download>⬇ Скачать</a>
-          `;
+  const files = await res.json();
 
-          container.appendChild(el);
-        });
-      });
-  </script>
+  const container = document.getElementById("list");
+  container.innerHTML = "";
+
+  files.forEach(file => {
+    if (file.type !== "file") return;
+
+    const el = document.createElement("div");
+    el.className = "card";
+
+    el.innerHTML = `
+      <h2>${file.name}</h2>
+      <a href="${file.download_url}" download>⬇ Скачать</a>
+    `;
+
+    container.appendChild(el);
+  });
+}
+
+loadScripts();
+</script>
 
 </body>
 </html>
